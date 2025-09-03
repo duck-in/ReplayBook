@@ -13,7 +13,7 @@
     <string:String x:Key="LoadingMessageExecutables">Vérification des exécutables...</string:String>
     <string:String x:Key="LoadingMessageThumbnails">Chargement des vignettes...</string:String>
     <string:String x:Key="LoadingMessageErrors">Chargement du/des rediffusions a échoué</string:String>
-    <string:String x:Key="LoadingFailureTitle">Échec de la charge du rediffusion</string:String>
+    <string:String x:Key="LoadingFailureTitle">Échec du chargement de la rediffusion</string:String>
     <string:String x:Key="LoadingFailureSubtitle">Veuillez corriger ou supprimer ce(s) fichier(s):</string:String>
 
     <string:String x:Key="CloseText">Fermer</string:String>
@@ -30,7 +30,8 @@
     <string:String x:Key="RunesTabText">RUNES</string:String>
     <string:String x:Key="StatsTabText">STATS</string:String>
     <string:String x:Key="BlankDetailMessageText">Sélectionnez une rediffusion à gauche pour commencer</string:String>
-    <string:String x:Key="FailedToLoadReplayText">Échec du chargement de la rediffusion</string:String>
+    <string:String x:Key="General__PreviewItem__FailedToLoadText">Echec du chargement de la rediffusion!</string:String>
+    <string:String x:Key="FailedToLoadReplayText">Cette rediffusion n'a pas pu être chargée, le fichier est peut-être corrompu. Voir ci-dessous pour plus d'informations:</string:String>
     <string:String x:Key="Victory">VICTOIRE</string:String>
     <string:String x:Key="BlueVictory">Victoire Bleue</string:String>
     <string:String x:Key="RedVictory">Victoire Rouge</string:String>
@@ -45,16 +46,19 @@
     <string:String x:Key="NoReplaysFoundTitle">Aucun résultat</string:String>
 
     <string:String x:Key="MissingPathTitle">Dossier de rediffusions non trouvé</string:String>
-    <string:String x:Key="MissingPathText">Le(s) chemin(s) suivant(s) n'ont pas pu être trouvés et ont été supprimés.:</string:String>
+    <string:String x:Key="MissingPathText">Le(s) chemin(s) suivant(s) n'ont pas pu être trouvés et ont été supprimés:</string:String>
 
     <string:String x:Key="General__DownloadButton">Télécharger</string:String>
     <string:String x:Key="General__Downloading">Téléchargement...</string:String>
     <string:String x:Key="General__ViewButton">Voir</string:String>
     <string:String x:Key="General__ExitButton">Quitter</string:String>
-    <string:String x:Key="General__GlobalExceptionHandler__Body">Une erreur inattendue s'est produite ! Vérifiez les logs pour plus de détails.</string:String>
+    <string:String x:Key="General__GlobalExceptionHandler__Body">Une erreur inattendue s'est produite! Vérifiez les logs pour plus de détails.</string:String>
 
     <string:String x:Key="Main__VanguardWarning__Title">Vanguard est en cours d'exécution</string:String>
-    <string:String x:Key="Main__VanguardWarning__Body">ReplayBook ne peut pas lire les rediffusions si Vanguard est en cours d'exécution. Veuillez quitter Vanguard avant d'essayer de lire les rediffusions.</string:String>
+    <string:String x:Key="Main__VanguardWarning__Body">ReplayBook ne peut pas charger de rediffusion si Vanguard est en cours d'exécution. Souhaitez-vous que ReplayBook arrête Vanguard?</string:String>
+    <string:String x:Key="Main__VanguardDisable__Title">Arrêt de Vanguard...</string:String>
+    <string:String x:Key="Main__VanguardPermissionsError__Title">Autorisation requise</string:String>
+    <string:String x:Key="Main__VanguardPermissionsError__Body">ReplayBook nécessite des privilèges administrateur pour désactiver Vanguard</string:String>
 
     <!--  Settings Window Text  -->
     <string:String x:Key="GeneralSettingsItemText">Général</string:String>
@@ -69,8 +73,8 @@
     <!--  Settings : General  -->
     <string:String x:Key="LanguageLabelText">Langue</string:String>
 
-    <string:String x:Key="PlayerMarkerLabelText">Marqueurs de joueurs</string:String>
-    <string:String x:Key="PlayerMarkerStyleLabel">Style du marqueurs de joueurs</string:String>
+    <string:String x:Key="PlayerMarkerLabelText">Marqueurs de joueur</string:String>
+    <string:String x:Key="PlayerMarkerStyleLabel">Style du marqueur de joueur</string:String>
     <string:String x:Key="PlayerMarkerStyleOption1">Contour</string:String>
     <string:String x:Key="PlayerMarkerStyleOption2">Carré intérieur</string:String>
     <string:String x:Key="PlayerMarkerWindowText">Marqueur de joueur</string:String>
@@ -84,22 +88,21 @@
     <string:String x:Key="FileAssociationButtonText">Définir l'association de fichiers .ROFL</string:String>
     <string:String x:Key="FileAssociationMessageTitleText">Association de fichiers enregistré</string:String>
     <string:String x:Key="FileAssociationMessageBodyText">ReplayBook a été défini comme application par défaut pour les fichiers .ROFL</string:String>
-    <string:String x:Key="FileActionOption1">Jouer la rediffusion</string:String>
+    <string:String x:Key="FileActionOption1">Lancer la rediffusion</string:String>
     <string:String x:Key="FileActionOption2">Afficher les stats</string:String>
 
     <string:String x:Key="MiscBehaviorLabelText">Comportements divers</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Confirmer avant de lancer les rediffusions</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Renommer le fichier lors du renommage des rediffusions</string:String>
 
-    <string:String x:Key="UpdatesLabelText">Chercher des mises à jour</string:String>
-    <string:String x:Key="AutoUpdateCheckboxText">Chercher automatiquement pour les mises à jour</string:String>
-    <string:String x:Key="CheckUpdatesButtonText">Chercher maintenant</string:String>
+    <string:String x:Key="UpdatesLabelText">Rechercher des mises à jour</string:String>
+    <string:String x:Key="AutoUpdateCheckboxText">Rechercher automatiquement les mises à jour</string:String>
+    <string:String x:Key="CheckUpdatesButtonText">Rechercher maintenant</string:String>
     <string:String x:Key="UpdateAvailableText">Une mise à jour est disponible! Téléchargez la nouvelle version ici</string:String>
     <string:String x:Key="UpdateAvailableNotifText">Nouvelle version disponible!</string:String>
-    <string:String x:Key="UpdateAvailableNotifButton">Télécharger</string:String>
     <string:String x:Key="OpenGitHubButtonText">Voir le projet sur GitHub</string:String>
-    <string:String x:Key="UpdateExceptionTitleText">Impossible de chercher des mises à jour</string:String>
-    <string:String x:Key="UpdateHTTPExceptionBodyText">La connexion à GitHub a échoué. Vérifiez votre connexion et réessayez</string:String>
+    <string:String x:Key="UpdateExceptionTitleText">Impossible de rechercher des mises à jour</string:String>
+    <string:String x:Key="UpdateHTTPExceptionBodyText">La connexion à GitHub a échoué. Vérifiez votre connexion et réessayez.</string:String>
     <string:String x:Key="UpdateGitHubErrorBodyText">GitHub a renvoyé une erreur. Cherchez manuellement des mises à jour en allant sur https://github.com/fraxiinus/ReplayBook</string:String>
     <string:String x:Key="UpdateMostRecentTitleText">Déjà à jour</string:String>
     <string:String x:Key="UpdateMostRecentBodyText">Vous utilisez actuellement la dernière version de ReplayBook.</string:String>
@@ -113,15 +116,15 @@
     <string:String x:Key="AppearanceThemeMode2">Clair</string:String>
     <string:String x:Key="AppearanceThemeAccentTitle">Couleur d'accentuation</string:String>
     <string:String x:Key="AppearanceThemeResetColorText">Réinitialiser</string:String>
-    <string:String x:Key="AppearanceThemeDefaultAccentNote">Utilisation du couleur d'accentuation définie par le système</string:String>
+    <string:String x:Key="AppearanceThemeDefaultAccentNote">Utilisation de la couleur d'accentuation définie par le système</string:String>
     <string:String x:Key="AppearanceThemeCustomAccentNote">Utilisation d'une couleur d'accentuation personnalisée</string:String>
 
     <string:String x:Key="ExecutableFoldersLabelText">Dossiers des sources des exécutables</string:String>
     <string:String x:Key="ExecutableFoldersInfoText">Tous les sous-dossiers sont inclus</string:String>
     <string:String x:Key="ExecutableFoldersSearchButtonText">Rechercher les exécutables dans les dossiers</string:String>
     <string:String x:Key="ExecutableFoldersSearchResultTitleText">Résultats de la recherche</string:String>
-    <string:String x:Key="ExecutableFoldersSearchResultLabelText">Enregistré $ nouvel(s) exécutable(s)</string:String>
-    <string:String x:Key="ExecutableFoldersSearchResultErrorText">Le(s) dossier(s) suivant(s) n'ont pu être recherchés:</string:String>
+    <string:String x:Key="ExecutableFoldersSearchResultLabelText">$ exécutable(s) enregistré(s)</string:String>
+    <string:String x:Key="ExecutableFoldersSearchResultErrorText">Le(s) dossier(s) suivant(s) n'ont pu être recherché(s):</string:String>
     <string:String x:Key="ExecutablesLabelText">Exécutables enregistrés</string:String>
     <string:String x:Key="ExecutableSelectFolderDialogText">Sélectionner le dossier source de l'exécutable</string:String>
     <string:String x:Key="ExecutableDetailWindowText">Exécutable</string:String>
@@ -132,10 +135,10 @@
     <string:String x:Key="ExecutableSaveNullTitle">Erreur lors de la sauvegarde</string:String>
     <string:String x:Key="ExecutableSelectWindowTitleText">Sélectionner l'exécutable</string:String>
     <string:String x:Key="ExecutableNotFoundErrorTitle">Rediffusion non supporté</string:String>
-    <string:String x:Key="ExecutableNotFoundErrorText">Aucun exécutable correspondant trouvé pour le correctif.</string:String>
+    <string:String x:Key="ExecutableNotFoundErrorText">Aucun exécutable correspondant trouvé pour le correctif</string:String>
     <string:String x:Key="ExecutableNotFoundDescriptionText">Cette rediffusion n'a pas pu être lancée car il n'y a pas d'exécutable correspondant. Un exécutable de même version que la rediffusion doit être enregistré dans ReplayBook pour la lancer.</string:String>
-    <string:String x:Key="ReplayPlayConfirmTitle">Jouez la rediffusion?</string:String>
-    <string:String x:Key="ReplayPlayConfirmOptOut">Vous pouvez désactiver cette confirmation dans la fenêtre des paramètres.</string:String>
+    <string:String x:Key="ReplayPlayConfirmTitle">Lancer la rediffusion?</string:String>
+    <string:String x:Key="ReplayPlayConfirmOptOut">Vous pouvez désactiver cette confirmation dans la fenêtre des paramètres</string:String>
 
     <!--  Executable Detail  -->
     <string:String x:Key="ExecutableDetailTargetPath">Chemin d'accès </string:String>
