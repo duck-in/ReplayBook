@@ -97,6 +97,7 @@
     <string:String x:Key="MiscBehaviorLabelText">其他</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">播放对局回放前显示确认</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">重命名回放同时重命名文件</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">使用文件夹结构视图代替扁平列表</string:String>
 
     <string:String x:Key="UpdatesLabelText">检查更新</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">自动检查更新</string:String>

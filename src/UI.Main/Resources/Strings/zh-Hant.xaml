@@ -100,6 +100,7 @@
     <string:String x:Key="MiscBehaviorLabelText">其他</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">播放重播前顯示確認</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">重命名重播同時重命名文件</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">使用資料夾結構檢視取代平面清單</string:String>
 
     <string:String x:Key="UpdatesLabelText">檢查更新</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">自動檢查更新</string:String>

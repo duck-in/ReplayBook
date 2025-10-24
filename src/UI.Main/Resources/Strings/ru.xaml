@@ -87,6 +87,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Прочие поведения</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Отображать подтверждение перед воспроизведением повторов</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Переименовывать файл при переименовании повторов</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Использовать вид со структурой папок вместо плоского списка</string:String>
 
     <string:String x:Key="UpdatesLabelText">Проверка обновлений</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Автоматически проверять обновления</string:String>

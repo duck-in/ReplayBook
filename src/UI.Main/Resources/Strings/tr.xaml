@@ -92,6 +92,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Çeşitli Davranışlar</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Tekrarları oynatmadan önce onayımı sor</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Tekrarları yeniden adlandırırken dosya isimlerini de değiştir</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Düz liste yerine klasör yapılı görünümü kullan</string:String>
 
     <string:String x:Key="UpdatesLabelText">Güncellemeleri kontrol et</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Otomatik olarak güncellemeleri kontrol et</string:String>

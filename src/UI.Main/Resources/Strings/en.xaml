@@ -94,6 +94,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Miscellaneous Behaviors</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Show confirmation before playing replays</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Rename file when renaming replays</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Use folder-structured view instead of flat list</string:String>
 
     <string:String x:Key="UpdatesLabelText">Check for Updates</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Automatically check for updates</string:String>

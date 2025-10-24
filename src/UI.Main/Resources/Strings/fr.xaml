@@ -94,6 +94,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Comportements divers</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Confirmer avant de lancer les rediffusions</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Renommer le fichier lors du renommage des rediffusions</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Utiliser la vue structurée par dossiers au lieu de la liste plate</string:String>
 
     <string:String x:Key="UpdatesLabelText">Rechercher des mises à jour</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Rechercher automatiquement les mises à jour</string:String>

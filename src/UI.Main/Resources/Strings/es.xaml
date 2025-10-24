@@ -75,6 +75,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Otros</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Pedir confirmación antes de reproducir repeticiones</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Renombrar archivo al renombrar repeticiones</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Usar vista con estructura de carpetas en lugar de lista plana</string:String>
 
     <string:String x:Key="UpdatesLabelText">Actualizaciones</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Buscar actualizaciones automáticamente</string:String>

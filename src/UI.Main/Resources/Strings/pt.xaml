@@ -87,6 +87,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Comportamentos diversos</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Pedir confirmação antes de assistir a replays</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Renomear o arquivo original quando renomear replays</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Usar visualização em pastas em vez de lista simples</string:String>
 
     <string:String x:Key="UpdatesLabelText">Procurar Atualizações</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Procurar atualizações automaticamente</string:String>

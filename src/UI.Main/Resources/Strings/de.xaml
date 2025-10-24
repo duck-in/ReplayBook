@@ -81,6 +81,7 @@
     <string:String x:Key="MiscBehaviorLabelText">Sonstiges Verhalten</string:String>
     <string:String x:Key="PlayConfirmCheckboxText">Bestätigung anzeigen, bevore Replays abgespielt werden</string:String>
     <string:String x:Key="ReplayRenameCheckboxText">Datei umbenennen, wenn Replay umbenennt wird</string:String>
+    <string:String x:Key="FolderStructureCheckboxText">Ordnerstrukturierte Ansicht statt flacher Liste verwenden</string:String>
 
     <string:String x:Key="UpdatesLabelText">Auf Updates überprüfen</string:String>
     <string:String x:Key="AutoUpdateCheckboxText">Automatisch auf Updates überprüfen</string:String>

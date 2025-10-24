@@ -34,6 +34,7 @@ namespace Fraxiinus.ReplayBook.Configuration
                     FileAction = config.FileAction,
                     PlayConfirm = config.PlayConfirm,
                     RenameFile = config.RenameFile,
+                    UseFolderStructure = config.UseFolderStructure,
                     ItemsPerPage = config.ItemsPerPage,
                     AutoUpdateCheck = config.AutoUpdateCheck,
                     Language = config.Language

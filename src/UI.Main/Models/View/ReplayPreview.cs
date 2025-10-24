@@ -12,12 +12,15 @@ public class ReplayPreview : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler PropertyChanged;
     private readonly bool _showRealName;
+    private readonly bool _useFolderStructure;
+    private readonly string _filePath;
 
     public ReplayPreview(FileResult file, ObservableConfiguration config)
     {
         if (file == null) { throw new ArgumentNullException(nameof(file)); }
         
         Name = file.FileName;
+        _filePath = file.Id;
         AlternativeName = file.AlternativeName;
         Location = file.FileInfo.Path;
         CreationDate = file.FileCreationTime;
@@ -37,6 +40,7 @@ public class ReplayPreview : INotifyPropertyChanged
 
         // Set new fields
         _showRealName = config.RenameFile;
+        _useFolderStructure = config.UseFolderStructure;
         IsPlaying = false;
         IsSelected = false;
 
@@ -76,8 +80,9 @@ public class ReplayPreview : INotifyPropertyChanged
     {
         get
         {
+            if (_useFolderStructure) return _filePath; // TODO Remove once everything is inside folders
             if (string.IsNullOrEmpty(_displayName)) { return _showRealName ? Name : AlternativeName; }
-            else { return _displayName; }
+            return _displayName;
         }
         set
         {

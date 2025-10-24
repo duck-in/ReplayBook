@@ -57,6 +57,10 @@ namespace Fraxiinus.ReplayBook.Configuration.Models
         [ConfigurationKeyName("rename_file")]
         [JsonPropertyName("rename_file")]
         public bool RenameFile { get; set; }
+        
+        [ConfigurationKeyName("use_folder_structure")]
+        [JsonPropertyName("use_folder_structure")]
+        public bool UseFolderStructure { get; set; }
 
         [ConfigurationKeyName("items_per_page")]
         [JsonPropertyName("items_per_page")]
