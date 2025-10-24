@@ -52,7 +52,7 @@
                     </Style>
                 </ListBox.ItemContainerStyle>
                 <ListBox.ItemTemplate>
-                    <DataTemplate DataType="models:ExportSelectItem">
+                    <DataTemplate DataType="models:ExportAttributeSelectItem">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />

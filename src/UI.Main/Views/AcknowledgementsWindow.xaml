@@ -9,7 +9,7 @@
         Height="450"
         ui:WindowHelper.UseModernWindowStyle="True"
         mc:Ignorable="d">
-    <Grid Background="{StaticResource BaseBackground}">
+    <Grid Background="{DynamicResource BaseBackground}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="*" />
@@ -17,7 +17,7 @@
         <ListBox x:Name="AcknowledgementsListBox"
                  Grid.Column="0"
                  Width="200"
-                 Background="{StaticResource TabViewBackground}"
+                 Background="{DynamicResource TabViewBackground}"
                  FontSize="14"
                  SelectionChanged="AcknowledgementsListBox_SelectionChanged" />
         <Grid Grid.Column="1" Margin="12,0,0,0">

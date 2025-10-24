@@ -6,7 +6,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:models="clr-namespace:Fraxiinus.ReplayBook.UI.Main.Models"
              xmlns:ui="http://schemas.modernwpf.com/2019"
-             d:DataContext="{d:DesignInstance Type=models:PlayerPreview}"
+             xmlns:view="clr-namespace:Fraxiinus.ReplayBook.UI.Main.Models.View"
+             d:DataContext="{d:DesignInstance Type=view:PlayerPreview}"
              d:DesignHeight="30"
              d:DesignWidth="30"
              mc:Ignorable="d">
