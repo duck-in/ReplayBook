@@ -1,130 +1,91 @@
-﻿namespace Fraxiinus.ReplayBook.Files.Models;
+﻿using LiteDB;
 
-using Fraxiinus.ReplayBook.Files.Utilities;
-using Fraxiinus.Rofl.Extract.Data;
-using Fraxiinus.Rofl.Extract.Data.Models;
-using Fraxiinus.Rofl.Extract.Data.Models.Rofl2;
-using LiteDB;
+namespace Fraxiinus.ReplayBook.Files.Models;
+
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 
 public class ReplayFile
 {
-    /// <summary>
-    /// Blank constructor for LiteDB
-    /// </summary>
+    // Constructor for LiteDB
     public ReplayFile() { }
 
-    public ReplayFile(string fullFilePath, ParseResult input)
+    // Initial constructor for first time file is parsed
+    public ReplayFile(FileInfo fileInfo, Replay replay)
     {
-        Name = Path.GetFileName(fullFilePath);
-        // AlternativeName = Name;
-        Location = fullFilePath;
+        FileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
+        Replay = replay ?? throw new ArgumentNullException(nameof(replay));
 
-        Type = input.Type;
-        switch (Type)
+        Id = FileInfo.Path;
+        AlternativeName = FileInfo.Name;
+
+        SearchKeywords = new List<string>
         {
-            case ReplayType.ROFL2:
-                LoadFromROFL2File((ROFL2)input.Result);
-                break;
-            case ReplayType.ROFL:
-                LoadFromROFLFile((ROFL)input.Result);
-                break;
-        }
-
-        // Infer values
-        MapId = GameDetailsInferrer.InferMap(Players);
-        MapName = GameDetailsInferrer.GetMapName(MapId);
-        IsBlueVictorious = GameDetailsInferrer.InferBlueVictory(BluePlayers, RedPlayers);
+            FileInfo.Name.ToUpper(CultureInfo.InvariantCulture)
+        };
+        SearchKeywords.AddRange(Replay.Players.Select(x => x.Name.ToUpper(CultureInfo.InvariantCulture)));
+        SearchKeywords.AddRange(Replay.Players.Select(x => x.Skin.ToUpper(CultureInfo.InvariantCulture)));
     }
 
-    private void LoadFromROFL2File(ROFL2 input)
+    // Error constructor
+    public ReplayFile(FileInfo fileInfo, ReplayErrorInfo errorInfo)
     {
-        // Copy values
-        GameDuration = TimeSpan.FromMilliseconds(input.Metadata.GameLength);
-        GameVersion = input.Metadata.GameVersion;
-        MatchId = "Unknown";
+        FileInfo = fileInfo ?? throw new ArgumentNullException(nameof(fileInfo));
+        ErrorInfo = errorInfo ?? throw new ArgumentNullException(nameof(errorInfo));
 
-        // UniqueId must be unique for every player in a match.
-        // It is used to optimize the player cache so the same object isn't loaded twice
+        Id = FileInfo.Path;
+        AlternativeName = FileInfo.Name;
 
-        BluePlayers = input.Metadata.PlayerStatistics
-            .Where(x => x.Team == "100")
-            .Select(y =>
-            {
-                y.UniqueId = $"{y.Id}_{y.Exp}_{GameDuration}";
-                return y;
-            }).ToList();
-        RedPlayers = input.Metadata.PlayerStatistics
-            .Where(x => x.Team == "200")
-            .Select(y =>
-            {
-                y.UniqueId = $"{y.Id}_{y.Exp}_{GameDuration}";
-                return y;
-            }).ToList();
+        SearchKeywords = new List<string>
+        {
+            FileInfo.Name.ToUpper(CultureInfo.InvariantCulture),
+        };
     }
 
-    private void LoadFromROFLFile(ROFL input)
-    {
-        // Copy values
-        GameDuration = TimeSpan.FromMilliseconds(input.Metadata.GameLength);
-        GameVersion = input.Metadata.GameVersion;
-        MatchId = input.PayloadHeader.GameId.ToString();
-
-        BluePlayers = input.Metadata.PlayerStatistics
-            .Where(x => x.Team == "100")
-            .Select(y =>
-            {
-                y.UniqueId = $"{y.Id}_{y.Exp}_{GameDuration}";
-                return RoflBaseClassConverter.ToPlayerStats2(y);
-            }).ToList();
-
-        RedPlayers = input.Metadata.PlayerStatistics
-            .Where(x => x.Team == "200")
-            .Select(y =>
-            {
-                y.UniqueId = $"{y.Id}_{y.Exp}_{GameDuration}";
-                return RoflBaseClassConverter.ToPlayerStats2(y);
-            }).ToList();
-    }
+    [BsonRef("fileInfo")]
+    public FileInfo FileInfo { get; set; }
 
     /// <summary>
-    /// Name of the file
+    /// Will be null if replay failed to parse
     /// </summary>
-    public string Name { get; set; }
+    [BsonRef("replay")]
+    public Replay Replay { get; set; }
 
     /// <summary>
-    /// Full path of the file
+    /// Will be set if replay failed to parse
     /// </summary>
-    public string Location { get; set; }
+    [BsonRef("errorInfo")]
+    public ReplayErrorInfo ErrorInfo { get; set; }
 
-    public TimeSpan GameDuration { get; set; }
+    /// <summary>
+    /// Full file path used as ID
+    /// </summary>
+    [BsonId]
+    public string Id { get; set; }
 
-    public string GameVersion { get; set; }
+    // The following fields are used to allow for fast indexing
+    // Placing them on the root level object makes creating indexes very easy and clear.
+    public List<string> SearchKeywords { get; set; }
 
-    public string MatchId { get; set; }
+    // User Assigned Field
+    public string AlternativeName { get; set; }
 
-    [BsonIgnore]
-    public IEnumerable<PlayerStats2> Players
+    public override string ToString()
     {
-        get => BluePlayers.Union(RedPlayers);
+        return ToString("");
     }
-
-    public List<PlayerStats2> BluePlayers { get; set; }
-
-    public List<PlayerStats2> RedPlayers { get; set; }
-
-    public ReplayType Type { get; set; }
-
-    // Inferred fields
-    public MapId MapId { get; set; }
-
-    public string MapName { get; set; }
-
-    public bool IsBlueVictorious { get; set; }
-
-    // User assigned fields
-    //public string AlternativeName { get; set; }
+    
+    public string ToString(string prefix)
+    {
+        return
+            $"{prefix}ReplayFile {{\r\n" +
+            $"{prefix}\t{nameof(FileInfo)}: {FileInfo.ToString("\t")},\r\n" +
+            $"{prefix}\t{nameof(Replay)}: {Replay.ToString("\t")},\r\n" +
+            $"{prefix}\t{nameof(Id)}: {Id},\r\n" +
+            $"{prefix}\t{nameof(SearchKeywords)}: [{string.Join(", ", SearchKeywords)}],\r\n" +
+            $"{prefix}\t{nameof(AlternativeName)}: {AlternativeName}\r\n" +
+            $"{prefix}}}";
+    }
 }

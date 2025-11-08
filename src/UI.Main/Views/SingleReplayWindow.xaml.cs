@@ -61,7 +61,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Views
         {
             if (DataContext is not MainWindowViewModel context) { return; }
 
-            FileResult replay = null;
+            ReplayFile replay = null;
 
             try
             {

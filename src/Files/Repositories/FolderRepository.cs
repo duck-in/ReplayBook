@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FileInfo = Fraxiinus.ReplayBook.Files.Models.FileInfo;
 
 namespace Fraxiinus.ReplayBook.Files.Repositories
 {
@@ -30,55 +31,29 @@ namespace Fraxiinus.ReplayBook.Files.Repositories
         /// Returns full paths of every replay file to show
         /// </summary>
         /// <returns></returns>
-        public ReplayFileInfo[] GetAllReplayFileInfo()
+        public FolderInfo[] GetTopLevelReplayFolders()
         {
-            var returnList = new List<ReplayFileInfo>();
+            List<FolderInfo> topLevelFolders = new List<FolderInfo>();
 
-            foreach (string folder in _config.ReplayFolders)
-            {
-                // Grab the contents of the folder
-                var dirInfo = new DirectoryInfo(folder);
-                var innerFiles = dirInfo.EnumerateFiles("*", SearchOption.AllDirectories);
+            topLevelFolders.AddRange(_config.ReplayFolders
+                .Select(f => new DirectoryInfo(f))
+                .Select(d => new FolderInfo(d, 0)));
 
-                foreach (var file in innerFiles)
-                {
-                    // If the file is not supported, skip it
-                    if (!(file.Name.EndsWith(".rofl", StringComparison.OrdinalIgnoreCase)))
-                    {
-                        continue;
-                    }
-
-                    returnList.Add(new ReplayFileInfo()
-                    {
-                        Path = file.FullName,
-                        CreationTime = file.CreationTime,
-                        FileSizeBytes = file.Length,
-                        Name = Path.GetFileNameWithoutExtension(file.FullName)
-                    });
-                }
-            }
-
-            return returnList.ToArray();
+            return topLevelFolders.ToArray();
         }
 
-        public ReplayFileInfo GetSingleReplayFileInfo(string path)
+        public FileInfo GetSingleReplayFileInfo(string path)
         {
-            var file = new FileInfo(path);
+            var file = new System.IO.FileInfo(path);
 
             // If the file is not supported, skip it
-            if (!(file.Name.EndsWith(".rofl", StringComparison.OrdinalIgnoreCase)))
+            if (!file.Name.EndsWith(".rofl", StringComparison.OrdinalIgnoreCase))
             {
                 _log.Warning($"File {path} is not supported, cannot get file info");
                 return null;
             }
 
-            return new ReplayFileInfo()
-            {
-                Path = file.FullName,
-                CreationTime = file.CreationTime,
-                FileSizeBytes = file.Length,
-                Name = Path.GetFileNameWithoutExtension(file.FullName)
-            };
+            return new FileInfo(file);
         }
 
         public bool IsPathInSourceFolders(string path)

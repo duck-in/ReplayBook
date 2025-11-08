@@ -128,12 +128,12 @@ public class SearchRepository
     }
 
     /// <summary>
-    /// Index a <see cref="FileResult"/> into the search repository
+    /// Index a <see cref="ReplayFile"/> into the search repository
     /// </summary>
-    /// <param name="fileResult"></param>
-    public void AddDocument(FileResult fileResult)
+    /// <param name="replayFile"></param>
+    public void AddDocument(ReplayFile replayFile)
     {
-        var document = CreateDocument(fileResult);
+        var document = CreateDocument(replayFile);
 
         _writer.AddDocument(document);
     }
@@ -146,13 +146,13 @@ public class SearchRepository
     /// <summary>
     /// This action commits the index!
     /// </summary>
-    /// <param name="fileResult"></param>
+    /// <param name="replayFile"></param>
     /// <param name="newName"></param>
-    public void UpdateDocumentName(FileResult fileResult, string newName)
+    public void UpdateDocumentName(ReplayFile replayFile, string newName)
     {
-        fileResult.AlternativeName = newName;
-        var document = CreateDocument(fileResult);
-        _writer.UpdateDocument(new Term("id", fileResult.Id), document);
+        replayFile.AlternativeName = newName;
+        var document = CreateDocument(replayFile);
+        _writer.UpdateDocument(new Term("id", replayFile.Id), document);
         CommitIndex();
     }
 
@@ -197,36 +197,36 @@ public class SearchRepository
         return (_searchResults.Skip(skip).Take(maxEntries), _searchResults.Count);
     }
 
-    private static Document CreateDocument(FileResult fileResult)
+    private static Document CreateDocument(ReplayFile replayFile)
     {
         var document = new Document
         {
-            new StringField("id", fileResult.Id, Field.Store.YES)
+            new StringField("id", replayFile.Id, Field.Store.YES)
         };
 
-        if (fileResult.ReplayFile != default)
+        if (replayFile.Replay != default)
         {
             // Default search includes player name with champion
-            var playerChampionCombinations = string.Join(", ", fileResult.ReplayFile.Players.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
+            var playerChampionCombinations = string.Join(", ", replayFile.Replay.Players.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
             // text fields provide full text search, string fields do complete match
-            document.Add(new TextField("baseKeywords", fileResult.AlternativeName + ", " + playerChampionCombinations, Field.Store.NO));
+            document.Add(new TextField("baseKeywords", replayFile.AlternativeName + ", " + playerChampionCombinations, Field.Store.NO));
 
             // Allow users to search specific teams, allowing a basic matchup search
-            var redPlayers = string.Join(", ", fileResult.ReplayFile.RedPlayers.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
-            var bluePlayers = string.Join(", ", fileResult.ReplayFile.BluePlayers.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
+            var redPlayers = string.Join(", ", replayFile.Replay.RedPlayers.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
+            var bluePlayers = string.Join(", ", replayFile.Replay.BluePlayers.Select(p => p.Name + " " + GetSafeChampionName(p.Skin)));
             document.Add(new TextField("red", redPlayers, Field.Store.NO));
             document.Add(new TextField("blue", bluePlayers, Field.Store.NO));
             
             // enable game length query
-            document.Add(new StringField("length", $"{fileResult.ReplayFile.GameDuration.Minutes}{fileResult.ReplayFile.GameDuration.Seconds}", Field.Store.NO));
+            document.Add(new StringField("length", $"{replayFile.Replay.GameDuration.Minutes}{replayFile.Replay.GameDuration.Seconds}", Field.Store.NO));
         }
 
         // Query date, allow for date range query
-        document.Add(new StringField("date", DateTools.DateToString(fileResult.FileCreationTime, DateResolution.DAY), Field.Store.NO));
+        document.Add(new StringField("date", DateTools.DateToString(replayFile.FileInfo.CreationTime, DateResolution.DAY), Field.Store.NO));
         // These are used for sorting, and must be stored
-        document.Add(new StringField("name", fileResult.AlternativeName, Field.Store.YES));
-        document.Add(new Int64Field("createdDate", fileResult.FileCreationTime.Ticks, Field.Store.YES));
-        document.Add(new Int64Field("fileSize", fileResult.FileSizeBytes, Field.Store.YES));
+        document.Add(new StringField("name", replayFile.AlternativeName, Field.Store.YES));
+        document.Add(new Int64Field("createdDate", replayFile.FileInfo.CreationTime.Ticks, Field.Store.YES));
+        document.Add(new Int64Field("fileSize", replayFile.FileInfo.Size, Field.Store.YES));
 
         return document;
     }

@@ -259,7 +259,7 @@
                                VerticalAlignment="Center"
                                Background="Transparent"
                                FontSize="14"
-                               Text="{Binding Path=FileInfo.FileSizeBytes, FallbackValue=FileSize, Mode=OneWay, Converter={StaticResource FormatKbSizeConverter}}"
+                               Text="{Binding Path=FileInfo.Size, FallbackValue=FileSize, Mode=OneWay, Converter={StaticResource FormatKbSizeConverter}}"
                                ToolTip="{DynamicResource FileSizeToolTip}" />
 
                     <TextBlock Margin="0,0,15,0"

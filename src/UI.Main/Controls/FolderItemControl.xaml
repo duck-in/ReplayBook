@@ -1,0 +1,161 @@
+<UserControl x:Class="Fraxiinus.ReplayBook.UI.Main.Controls.FolderItemControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="clr-namespace:Fraxiinus.ReplayBook.UI.Main.Models.View"
+             xmlns:ui="http://schemas.modernwpf.com/2019"
+             d:DataContext="{d:DesignInstance Type=models:ReplayFolder}"
+             mc:Ignorable="d">
+
+
+                <Grid Width="350"
+                      Height="100"
+                      Background="Transparent"
+                      MouseEnter="Grid_MouseEnter"
+                      MouseLeave="Grid_MouseLeave"
+                      MouseRightButtonUp="UIElement_OnMouseRightButtonUp">
+
+                    <Grid.ContextMenu>
+                        <ContextMenu x:Name="DockPanelFolderContextMenu"
+                                     Placement="Bottom">
+
+                            <MenuItem Click="OpenContainingFolder_Click" Header="{DynamicResource OpenContainingFolder}">
+                                <MenuItem.Icon>
+                                    <ui:PathIcon Data="{StaticResource ExplorerFolderPathIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <MenuItem Click="RenameFolder_OnClick" Header="{DynamicResource RenameReplayFile}">
+                                <MenuItem.Icon>
+                                    <ui:PathIcon Data="{StaticResource RenamePathIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <MenuItem Click="DeleteFolder_OnClick" Header="{DynamicResource DeleteReplayFile}">
+                                <MenuItem.Icon>
+                                    <ui:PathIcon Data="{StaticResource DeletePathIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+
+                            <Separator />
+                            
+                            <MenuItem Click="RefreshList_Click" Header="{DynamicResource RefreshReplayList}">
+                                <MenuItem.Icon>
+                                    <ui:PathIcon Data="{StaticResource RefreshPathIcon}" />
+                                </MenuItem.Icon>
+                            </MenuItem>
+                        </ContextMenu>
+                    </Grid.ContextMenu>
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <ui:SimpleStackPanel Grid.Row="0"
+                                         Grid.Column="0"
+                                         Margin="0,5,0,2"
+                                         Orientation="Horizontal" />
+
+                    <!--  Left side stats  -->
+                    <StackPanel Grid.Row="1"
+                                Grid.Column="0"
+                                Margin="0,10,5,0"
+                                Orientation="Vertical">
+                        
+                        <TextBlock x:Name="FolderNameText"
+                                   FontSize="28"
+                                   Text="{Binding Path=Name, FallbackValue=Folder}" />
+                        
+                        <TextBlock x:Name="ReplayCount"
+                                   FontSize="14"
+                                   Text="{Binding Path=ReplayCount, StringFormat=Replays: {0}, FallbackValue=Replays: 0}">
+                        </TextBlock>
+                    </StackPanel>
+                    
+                    <!--  Right side button  -->
+                    <StackPanel x:Name="ButtonPanel"
+                                Grid.Row="0"
+                                Grid.RowSpan="2"
+                                Grid.Column="1"
+                                VerticalAlignment="Center"
+                                Orientation="Vertical">
+                        
+                        <StackPanel.Style>
+                            <Style TargetType="StackPanel">
+                                <Style.Triggers>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Path=IsHovered}" Value="true" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+                                    <MultiDataTrigger>
+                                        <MultiDataTrigger.Conditions>
+                                            <Condition Binding="{Binding Path=IsHovered}" Value="false" />
+                                        </MultiDataTrigger.Conditions>
+                                        <MultiDataTrigger.Setters>
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </MultiDataTrigger.Setters>
+                                    </MultiDataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Style>
+
+                        <Button x:Name="MoreButton"
+                                Width="37"
+                                Margin="0"
+                                Click="MoreButton_Click"
+                                ToolTip="{DynamicResource MoreToolTip}">
+                            <ui:PathIcon Data="{StaticResource MorePathIcon}" RenderOptions.BitmapScalingMode="HighQuality" />
+
+                            <Button.ContextMenu>
+                                <ContextMenu x:Name="FolderContextMenu" Placement="Bottom">
+
+                                    <MenuItem x:Name="OpenContainingFolder"
+                                              Click="OpenContainingFolder_Click"
+                                              Header="{DynamicResource OpenContainingFolder}">
+                                        <MenuItem.Icon>
+                                            <ui:PathIcon Data="{StaticResource ExplorerFolderPathIcon}" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
+                                    <MenuItem x:Name="RenameFolder"
+                                              Click="RenameFolder_OnClick"
+                                              Header="{DynamicResource RenameReplayFile}">
+                                        <MenuItem.Icon>
+                                            <ui:PathIcon Data="{StaticResource RenamePathIcon}" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+
+                                    <MenuItem x:Name="DeleteFolder"
+                                              Click="DeleteFolder_OnClick"
+                                              Header="{DynamicResource DeleteReplayFile}">
+                                        <MenuItem.Icon>
+                                            <ui:PathIcon Data="{StaticResource DeletePathIcon}" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    
+                                    <Separator />
+                                    <MenuItem x:Name="RefreshList"
+                                              Click="RefreshList_Click"
+                                              Header="{DynamicResource RefreshReplayList}">
+                                        <MenuItem.Icon>
+                                            <ui:PathIcon Data="{StaticResource RefreshPathIcon}" />
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                </ContextMenu>
+                            </Button.ContextMenu>
+                        </Button>
+
+                    </StackPanel>
+
+                </Grid>
+</UserControl>

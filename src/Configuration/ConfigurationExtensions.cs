@@ -1,7 +1,12 @@
-﻿using Etirps.RiZhi;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Etirps.RiZhi;
 using Fraxiinus.ReplayBook.Configuration.Models;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 namespace Fraxiinus.ReplayBook.Configuration
 {
@@ -34,7 +39,7 @@ namespace Fraxiinus.ReplayBook.Configuration
                     FileAction = config.FileAction,
                     PlayConfirm = config.PlayConfirm,
                     RenameFile = config.RenameFile,
-                    UseFolderStructure = config.UseFolderStructure,
+                    UseHierarchyView = config.UseHierarchyView,
                     ItemsPerPage = config.ItemsPerPage,
                     AutoUpdateCheck = config.AutoUpdateCheck,
                     Language = config.Language

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 
@@ -27,7 +28,7 @@ namespace Fraxiinus.ReplayBook.Configuration.Models
             FileAction = config.GeneralSettings.FileAction;
             PlayConfirm = config.GeneralSettings.PlayConfirm;
             RenameFile = config.GeneralSettings.RenameFile;
-            UseFolderStructure = config.GeneralSettings.UseFolderStructure;
+            UseHierarchyView = config.GeneralSettings.UseHierarchyView;
             ItemsPerPage = config.GeneralSettings.ItemsPerPage;
             AutoUpdateCheck = config.GeneralSettings.AutoUpdateCheck;
             Language = config.GeneralSettings.Language;
@@ -86,7 +87,7 @@ namespace Fraxiinus.ReplayBook.Configuration.Models
 
         public bool RenameFile { get; set; }
 
-        public bool UseFolderStructure { get; set; }
+        public bool UseHierarchyView { get; set; }
         
         public bool AutoUpdateCheck { get;set; }
 

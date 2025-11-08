@@ -114,7 +114,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Controls
         {
             if (Context != null)
             {
-                ViewModel.OpenReplayContainingFolder(Context.Location);
+                ViewModel.OpenContainingFolder(Context.Location);
             }
         }
 

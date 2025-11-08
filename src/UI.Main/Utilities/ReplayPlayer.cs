@@ -34,7 +34,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Utilities
 
         public async Task<Process> PlayReplay(string path)
         {
-            Files.Models.FileResult replay = await _files.GetSingleFile(path).ConfigureAwait(true);
+            Files.Models.ReplayFile replay = await _files.GetSingleFile(path).ConfigureAwait(true);
             if (replay is null)
             {
                 // replay file could not be read
@@ -46,13 +46,13 @@ namespace Fraxiinus.ReplayBook.UI.Main.Utilities
                 return null;
             }
 
-            IReadOnlyCollection<LeagueExecutable> executables = _executables.GetExecutablesByPatch(replay.ReplayFile.GameVersion);
+            IReadOnlyCollection<LeagueExecutable> executables = _executables.GetExecutablesByPatch(replay.Replay.GameVersion);
             if (!executables.Any())
             {
                 _log.Information($"No executables found to play replay");
 
                 // No executable found that can be used to play
-                await ShowUnsupportedDialog(replay.ReplayFile.GameVersion).ConfigureAwait(true);
+                await ShowUnsupportedDialog(replay.Replay.GameVersion).ConfigureAwait(true);
 
                 return null;
             }

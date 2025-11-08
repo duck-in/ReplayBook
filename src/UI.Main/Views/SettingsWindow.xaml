@@ -236,7 +236,7 @@
 
                                 <CheckBox Content="{DynamicResource ReplayRenameCheckboxText}" IsChecked="{Binding Path=Configuration.RenameFile}" />
                                 
-                                <CheckBox Content="{DynamicResource FolderStructureCheckboxText}" IsChecked="{Binding Path=Configuration.UseFolderStructure}" />
+                                <CheckBox Content="{DynamicResource FolderStructureCheckboxText}" IsChecked="{Binding Path=Configuration.UseHierarchyView}" />
                             </ui:SimpleStackPanel>
 
                         </ui:SimpleStackPanel>

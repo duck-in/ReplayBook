@@ -126,18 +126,18 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void ReplayListView_Loaded(object sender, RoutedEventArgs e)
+    private async void ReplayTreeView_Loaded(object sender, RoutedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel context) { return; }
 
         await context.ReloadReplayList(false).ConfigureAwait(true);
     }
 
-    private async void ReplayListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private async void ReplayTreeView_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<Object> _)
     {
         if (DataContext is not MainWindowViewModel context) { return; }
-        if (sender is not System.Windows.Controls.ListView replayList) { return; }
-        if (replayList.SelectedItem is not ReplayPreview previewModel) { return; }
+        if (sender is not TreeView replayTree) { return; }
+        if (replayTree.SelectedItem is not ReplayPreview previewModel) { return; }
 
         // Deselect the last selected item
         if (_lastSelection != null && _lastSelection.IsSelected) { _lastSelection.IsSelected = false; }
@@ -147,8 +147,8 @@ public partial class MainWindow : Window
         _lastSelection = previewModel;
 
         // Get the replay file in question, and then create the detail model
-        FileResult replayFile = context.FileResults[previewModel.Location];
-        var replayDetail = new ReplayDetail(context.StaticDataManager, replayFile, previewModel);
+        ReplayFile replayReplayFile = context.FileResults[previewModel.Location];
+        var replayDetail = new ReplayDetail(context.StaticDataManager, replayReplayFile, previewModel);
 
         // Set the detail control that is used for displaying the replay
         ReplayDetailControl detailControl = FindName("DetailView") as ReplayDetailControl;
@@ -230,7 +230,7 @@ public partial class MainWindow : Window
     /// </summary>
     /// <param name="sender"></param>
     /// <param name="e"></param>
-    private void ReplayListView_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    private void ReplayTreeView_ScrollChanged(object sender, ScrollChangedEventArgs e)
     {
         if (DataContext is not MainWindowViewModel) { return; }
 
@@ -267,7 +267,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            context.StatusBarModel.StatusMessage = $"{context.PreviewReplays.Count} / {searchResults}";
+            context.StatusBarModel.StatusMessage = $"{context.ReplayNodes.Count} / {searchResults}";
         }
 
         // Hide the button bar once we've loaded more

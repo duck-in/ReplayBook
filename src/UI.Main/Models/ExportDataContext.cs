@@ -70,11 +70,11 @@ public class ExportDataContext : INotifyPropertyChanged
         }
     }
 
-    private ReplayFile _replay;
+    private Replay _replay;
     /// <summary>
     /// The main replay data to export from
     /// </summary>
-    public ReplayFile Replay
+    public Replay Replay
     {
         get => _replay;
         set

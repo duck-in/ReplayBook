@@ -20,6 +20,7 @@ public class FileManager
 
     private readonly RiZhi _log;
     private readonly List<string> _deletedFiles;
+    private readonly List<string> _deletedFolders;
     private readonly ObservableConfiguration _config;
     private readonly ReplayReaderOptions _readerOptions;
 
@@ -32,6 +33,7 @@ public class FileManager
         _log = log ?? throw new ArgumentNullException(nameof(log));
         _config = config;
         _deletedFiles = new List<string>();
+        _deletedFolders = new List<string>();
         _readerOptions = new ReplayReaderOptions
         {
             LoadPayload = false,
@@ -54,49 +56,14 @@ public class FileManager
     {
         _log.Information("Starting initial load of replays");
 
-        //List<ReplayFileInfo> newFiles = new List<ReplayFileInfo>();
-
         var errorResults = new List<ReplayErrorInfo>();
 
         // Get all files from all defined replay folders
-        IReadOnlyCollection<ReplayFileInfo> allFiles = _fileSystem.GetAllReplayFileInfo();
+        IReadOnlyCollection<FolderInfo> topLevelFolders = _fileSystem.GetTopLevelReplayFolders();
 
-        // Check if file exists in the database
-        foreach (ReplayFileInfo file in allFiles)
+        foreach (FolderInfo folder in topLevelFolders)
         {
-            if (_db.GetFileResult(file.Path) == null)
-            {
-                try
-                {
-                    var parseResult = await ReplayReader.ReadReplayAsync(file.Path, _readerOptions);
-                    var replayFile = new ReplayFile(file.Path, parseResult);
-                    var newResult = new FileResult(file, replayFile)
-                    {
-                        IsNewFile = false
-                    };
-
-                    _db.AddFileResult(newResult);
-                    _search.AddDocument(newResult);
-                }
-                catch (Exception ex)
-                {
-                    // if parsing file failed for any reason, save info
-                    _log.Warning($"Failed to parse file: {file.Path}");
-                    _log.Warning(ex.ToString());
-                    var errorInfo = new ReplayErrorInfo
-                    {
-                        FilePath = file.Path,
-                        ExceptionType = ex.GetType().FullName,
-                        ExceptionString = ex.ToString(),
-                        ExceptionCallStack = ex.StackTrace
-                    };
-                    var errorFileResult = new FileResult(file, errorInfo);
-                    _db.AddFileResult(errorFileResult);
-                    _search.AddDocument(errorFileResult);
-
-                    errorResults.Add(errorInfo);
-                }
-            }
+            errorResults.AddRange(await LoadFolder(folder));
         }
 
         _search.CommitIndex();
@@ -104,31 +71,70 @@ public class FileManager
         return errorResults;
     }
 
-    public async Task<FileResult> GetSingleFile(string path)
+    private async Task<IEnumerable<ReplayErrorInfo>> LoadFolder(FolderInfo folder)
+    {
+        var errorResults = new List<ReplayErrorInfo>();
+
+        foreach (Models.FileInfo file in folder.Files)
+        {
+            if (file is FolderInfo subfolder)
+            {
+                errorResults.AddRange(await LoadFolder(subfolder));
+                continue;
+            }
+
+            var temp = _db.GetReplayFile(file.Path);
+            if (temp != null) continue;
+
+            ReplayFile replayFile;
+            
+            try
+            {
+                var parseResult = await ReplayReader.ReadReplayAsync(file.Path, _readerOptions);
+                var replay = new Replay(file.Path, parseResult);
+                replayFile = new ReplayFile(file, replay);
+            }
+            catch (Exception ex)
+            {
+                // if parsing file failed for any reason, save info
+                _log.Warning($"Failed to parse file: {file.Path}");
+                _log.Warning(ex.ToString());
+
+                var errorInfo = new ReplayErrorInfo(file.Path, ex.GetType().FullName, ex.ToString(), ex.StackTrace);
+                replayFile = new ReplayFile(file, errorInfo);
+
+                errorResults.Add(errorInfo);
+            }
+
+            _db.AddReplayFile(replayFile);
+            _search.AddDocument(replayFile);
+        }
+        
+        _db.AddFile(folder);
+        
+        return errorResults;
+    }
+
+    public async Task<ReplayFile> GetSingleFile(string path)
     {
         if (!File.Exists(path)) return null;
 
-        FileResult returnValue = _db.GetFileResult(path);
+        ReplayFile returnValue = _db.GetReplayFile(path);
 
         // File exists in the database, return now
         if (returnValue != null)
         {
-            _log.Information($"File {path} already exists in database. Match ID: {returnValue.ReplayFile.MatchId}");
+            _log.Information($"File {path} already exists in database. Match ID: {returnValue.Replay.MatchId}");
             return returnValue;
         }
 
         var replayFileInfo = _fileSystem.GetSingleReplayFileInfo(path);
         var parseResult = await ReplayReader.ReadReplayAsync(path, _readerOptions);
 
-        if (parseResult is null) return null;
+        var replayFile = new Replay(path, parseResult);
+        var newResult = new ReplayFile(replayFileInfo, replayFile);
 
-        var replayFile = new ReplayFile(path, parseResult);
-        var newResult = new FileResult(replayFileInfo, replayFile)
-        {
-            IsNewFile = false
-        };
-
-        _db.AddFileResult(newResult);
+        _db.AddReplayFile(newResult);
 
         return newResult;
     }
@@ -143,8 +149,6 @@ public class FileManager
 
         var entries = _db.GetReplayFiles();
 
-        if (!entries.Any()) return;
-
         foreach (var entry in entries)
         {
             // Files does not exist! (Technically this is the same as id, but it's more clear)
@@ -152,10 +156,21 @@ public class FileManager
             if (!File.Exists(entry.FileInfo.Path) || !_fileSystem.IsPathInSourceFolders(entry.FileInfo.Path))
             {
                 _log.Information($"File {entry.Id} is no longer valid, removing from database...");
-                _db.RemoveFileResult(entry.Id);
+                _db.RemoveReplayFile(entry.Id);
             }
         }
 
+        var folders = _db.GetAllFolders();
+
+        foreach (var folder in folders)
+        {
+            if (!Directory.Exists(folder.Path) || !_fileSystem.IsPathInSourceFolders(folder.Path))
+            {
+                _log.Information($"Folder {folder.Path} is no longer valid, removing from database...");
+                _db.RemoveFolder(folder.Path);
+            }
+        }
+        
         _log.Information($"Pruning complete");
     }
 
@@ -168,63 +183,54 @@ public class FileManager
     /// <param name="resetSearch"></param>
     /// <returns></returns>
     /// <exception cref="ArgumentNullException"></exception>
-    public (IReadOnlyCollection<FileResult>, int searchResultCount) GetReplays(SearchParameters searchParameters, int maxEntries, int skip, bool resetSearch = false)
+    public (IReadOnlyCollection<ReplayFile>, int searchResultCount) GetReplays(SearchParameters searchParameters, int maxEntries, int skip, bool resetSearch = false)
     {
         if (searchParameters == null) { throw new ArgumentNullException(nameof(searchParameters)); }
-
+        
+        // If there is no query given...
         if (string.IsNullOrEmpty(searchParameters.QueryString))
         {
-            return (_db.QueryReplayFiles(Array.Empty<string>(), searchParameters.SortMethod, maxEntries, skip), -1);
+            // search the database
+            return (_db.QueryReplayFiles([], searchParameters.SortMethod, maxEntries, skip), -1);
         }
-
+        
+        // otherwise search the SearchDatabase (?? what the fuck)
         var (results, searchResultCount) = _search.Query(searchParameters, maxEntries, skip, _config.SearchMinimumScore, resetSearch);
 
-        return (_db.GetFileResults(results.Select(x => x.Id)), searchResultCount);
+        return (_db.GetReplayFiles(results.Select(x => x.Id)), searchResultCount);
     }
 
-    public string RenameReplay(FileResult file, string newName)
+    public IReadOnlyCollection<FolderInfo> GetTopLevelFolders(SearchParameters searchParameters, int maxEntries, int skip, bool resetSearch = false)
     {
-        return _config.RenameFile
-            ? RenameReplayInFileSystem(file, newName)
-            : RenameReplayInDatabase(file, newName);
-    }
-
-    private string RenameReplayInDatabase(FileResult file, string newName)
-    {
-        if (file == null) throw new ArgumentNullException(nameof(file));
-        if (String.IsNullOrEmpty(newName)) throw new Exception("{EMPTY ERROR}");
-
-        try
+        if (searchParameters == null) { throw new ArgumentNullException(nameof(searchParameters)); }
+        
+        // If there is no query given...
+        if (string.IsNullOrEmpty(searchParameters.QueryString))
         {
-            _db.UpdateAlternativeName(file.Id, newName);
-            _search.UpdateDocumentName(file, newName);
+            // search the database
+            return _db.QueryTopLevelFolders([], searchParameters.SortMethod, maxEntries, skip);
         }
-        catch (KeyNotFoundException ex)
-        {
-            _log.Information(ex.ToString());
-            throw new Exception("{NOT FOUND ERROR}", ex);
-        }
-
-        // Return value file path, no changes made to filesystem so return same id
-        return file.Id;
+        
+        // otherwise search the SearchDatabase (?? what the fuck)
+        // var (results, searchResultCount) = _search.Query(searchParameters, maxEntries, skip, _config.SearchMinimumScore, resetSearch);
+        // TODO implement search
+        throw new NotImplementedException("TODO search repository");
     }
-
-    private string RenameReplayInFileSystem(FileResult file, string newName)
+    
+    public string RenameFolder(string path, string newName)
     {
-        if (file == null) throw new ArgumentNullException(nameof(file));
         if (String.IsNullOrEmpty(newName)) throw new Exception("{EMPTY ERROR}");
+        ArgumentNullException.ThrowIfNull(path);
 
-        var nameWithExtension = newName.EndsWith(".rofl")
-            ? newName
-            : newName + ".rofl";
+        var newPath = Path.Combine(Path.GetDirectoryName(path), newName);
 
-        var newPath = Path.Combine(Path.GetDirectoryName(file.Id), nameWithExtension);
+        if (Directory.Exists(newPath)) throw new Exception("{NAME ALREADY EXISTS ERROR}");
 
-        _log.Information($"Renaming {file.Id} -> {newPath}");
+        _log.Information($"Renaming folder {path} -> {newPath}");
         // Rename the file
         try
         {
-            File.Move(file.Id, newPath);
+            Directory.Move(path, newPath);
         }
         catch (Exception ex)
         {
@@ -233,20 +239,78 @@ public class FileManager
         }
 
         // delete the database entry
-        _db.RemoveFileResult(file.Id);
-        _search.RemoveDocument(file.Id);
+        _db.SetNewFolderId(path, newPath);
+        // _search.RemoveDocument(replayFile.Id); TODO
+        
+        // return new file location
+        return newPath;
+    }
+    
+    public string RenameReplay(ReplayFile replayFile, string newName)
+    {
+        return _config.RenameFile
+            ? RenameReplayInFileSystem(replayFile, newName)
+            : RenameReplayInDatabase(replayFile, newName);
+    }
+
+    private string RenameReplayInDatabase(ReplayFile replayFile, string newName)
+    {
+        if (replayFile == null) throw new ArgumentNullException(nameof(replayFile));
+        if (String.IsNullOrEmpty(newName)) throw new Exception("{EMPTY ERROR}");
+
+        try
+        {
+            _db.UpdateAlternativeName(replayFile.Id, newName);
+            _search.UpdateDocumentName(replayFile, newName);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            _log.Information(ex.ToString());
+            throw new Exception("{NOT FOUND ERROR}", ex);
+        }
+
+        // Return value file path, no changes made to filesystem so return same id
+        return replayFile.Id;
+    }
+
+    private string RenameReplayInFileSystem(ReplayFile replayFile, string newName)
+    {
+        if (replayFile == null) throw new ArgumentNullException(nameof(replayFile));
+        if (String.IsNullOrEmpty(newName)) throw new Exception("{EMPTY ERROR}");
+
+        var nameWithExtension = newName.EndsWith(".rofl")
+            ? newName
+            : newName + ".rofl";
+
+        var newPath = Path.Combine(Path.GetDirectoryName(replayFile.Id), nameWithExtension);
+
+        _log.Information($"Renaming {replayFile.Id} -> {newPath}");
+        // Rename the file
+        try
+        {
+            File.Move(replayFile.Id, newPath);
+        }
+        catch (Exception ex)
+        {
+            _log.Information(ex.ToString());
+            throw new Exception("{FAILED TO WRITE}", ex);
+        }
+
+        // delete the database entry
+        _db.RemoveReplayFile(replayFile.Id);
+        _search.RemoveDocument(replayFile.Id);
 
         // Update new values
-        var fileInfo = file.FileInfo;
+        var fileInfo = replayFile.FileInfo;
         fileInfo.Name = nameWithExtension;
         fileInfo.Path = newPath;
 
-        var replayFile = file.ReplayFile;
-        replayFile.Name = nameWithExtension;
-        replayFile.Location = newPath;
+        var replay = replayFile.Replay;
+        replay.Name = nameWithExtension;
+        replay.Id = newPath;
 
-        var newFileResult = new FileResult(fileInfo, replayFile);
-        _db.AddFileResult(newFileResult);
+        var newFileResult = new ReplayFile(fileInfo, replay);
+        _db.AddReplayFile(newFileResult);
         _search.AddDocument(newFileResult);
         _search.CommitIndex();
 
@@ -257,24 +321,44 @@ public class FileManager
     /// <summary>
     /// Doesn't actually delete, but moves it to the cache folder, in case they didnt mean to delete it
     /// </summary>
-    /// <param name="file"></param>
+    /// <param name="replayFileram>
     /// <returns></returns>
-    public string DeleteFile(FileResult file)
+    public string DeleteFile(ReplayFile replayFile)
     {
-        if (file == null) throw new ArgumentNullException(nameof(file));
-
-        _log.Information($"Moving {file.Id} to cache folder - to be deleted when ReplayBook closes");
+        if (replayFile == null) throw new ArgumentNullException(nameof(replayFile));
+        
+        
+        _log.Information($"Moving {replayFile.Id} to cache folder - to be deleted when ReplayBook closes");
 
         var newPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cache", "deletedReplays");
         Directory.CreateDirectory(newPath);
 
-        newPath = Path.Combine(newPath, file.FileInfo.Name + ".rofl");
+        newPath = Path.Combine(newPath, replayFile.FileInfo.Name + ".rofl");
 
-        File.Move(file.Id, newPath);
+        File.Move(replayFile.Id, newPath);
 
-        _db.RemoveFileResult(file.Id);
+        _db.RemoveReplayFile(replayFile.Id);
 
         _deletedFiles.Add(newPath);
+        return newPath;
+    }
+
+    public string DeleteFolder(string path)
+    {
+        if (path == null) throw new ArgumentNullException(nameof(path));
+
+        _log.Information($"Moving folder {path} to cache folder - to be deleted when ReplayBook closes");
+
+        var newPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cache", "deletedFolders");
+        Directory.CreateDirectory(newPath);
+
+        newPath = Path.Combine(newPath, path.Split("\\").Last());
+
+        Directory.Move(path, newPath);
+
+        _db.RemoveFolder(path);
+
+        _deletedFolders.Add(newPath);
         return newPath;
     }
 
@@ -290,6 +374,18 @@ public class FileManager
             }
         }
 
-        _deletedFiles.Clear();
+        _deletedFiles.Clear();        
+        
+        foreach (var folder in _deletedFolders)
+        {
+            _log.Information($"Deleting folder {folder}");
+
+            if (Directory.Exists(folder))
+            {
+                Directory.Delete(folder, true);
+            }
+        }
+        
+        _deletedFolders.Clear();    
     }
 }

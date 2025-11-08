@@ -195,7 +195,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Controls
         {
             if (Window.GetWindow(this)?.DataContext is not MainWindowViewModel context) { return; }
             if (DataContext is not ReplayDetail replay) { return; }
-            context.OpenReplayContainingFolder(replay.PreviewModel.Location);
+            context.OpenContainingFolder(replay.PreviewModel.Location);
         }
 
         private void ExportReplayData_OnClick(object sender, RoutedEventArgs e)

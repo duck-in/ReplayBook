@@ -10,7 +10,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Models
 {
     public class ReplayDetail
     {
-        public ReplayDetail(StaticDataManager staticData, FileResult replay, ReplayPreview previewModel)
+        public ReplayDetail(StaticDataManager staticData, ReplayFile replay, ReplayPreview previewModel)
         {
             if (replay == null) { throw new ArgumentNullException(nameof(replay)); }
             if (previewModel.IsErrorReplay) 
@@ -26,7 +26,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Models
             AllPlayers = new List<PlayerDetail>();
 
             BluePlayers = new List<PlayerDetail>();
-            var combinedBluePlayers = replay.ReplayFile.BluePlayers.Zip(previewModel.BluePreviewPlayers, (p, r) => new { Player = p, Preview = r });
+            var combinedBluePlayers = replay.Replay.BluePlayers.Zip(previewModel.BluePreviewPlayers, (p, r) => new { Player = p, Preview = r });
             foreach (var bPlayer in combinedBluePlayers)
             {
                 var newPlayer = new PlayerDetail(staticData, previewModel.GameVersion, bPlayer.Player, bPlayer.Preview, true);
@@ -43,7 +43,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Models
             }
 
             RedPlayers = new List<PlayerDetail>();
-            var combinedRedPlayers = replay.ReplayFile.RedPlayers.Zip(previewModel.RedPreviewPlayers, (p, r) => new { Player = p, Preview = r });
+            var combinedRedPlayers = replay.Replay.RedPlayers.Zip(previewModel.RedPreviewPlayers, (p, r) => new { Player = p, Preview = r });
             foreach (var rPlayer in combinedRedPlayers)
             {
                 var newPlayer = new PlayerDetail(staticData, previewModel.GameVersion, rPlayer.Player, rPlayer.Preview, false);
@@ -70,7 +70,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Models
 
         public ReplayPreview PreviewModel { get; private set; }
 
-        public ReplayFileInfo FileInfo { get; private set; }
+        public FileInfo FileInfo { get; private set; }
 
         public ReplayErrorInfo ErrorInfo { get; private set; }
 

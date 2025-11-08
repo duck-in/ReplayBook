@@ -47,12 +47,17 @@ public class MainWindowViewModel
     /// <summary>
     /// Smaller, preview objects of replays
     /// </summary>
-    public ObservableCollection<ReplayPreview> PreviewReplays { get; private set; }
+    public ObservableCollection<ReplayNode> ReplayNodes { get; private set; }
 
+    /// <summary>
+    /// Folders that are direct children from the selected replay folders
+    /// </summary>
+    public ObservableCollection<ReplayFolder> TopLevelFolders { get; private set; }
+    
     /// <summary>
     /// Full replay objects with the filepath as the key
     /// </summary>
-    public Dictionary<string, FileResult> FileResults { get; private set; }
+    public Dictionary<string, ReplayFile> FileResults { get; private set; }
 
     /// <summary>
     /// Application configuration
@@ -97,8 +102,9 @@ public class MainWindowViewModel
         StaticDataManager = staticData ?? throw new ArgumentNullException(nameof(staticData));
 
         // Create new, blank objects
-        PreviewReplays = new ObservableCollection<ReplayPreview>();
-        FileResults = new Dictionary<string, FileResult>();
+        ReplayNodes = new ObservableCollection<ReplayNode>();
+        TopLevelFolders = new ObservableCollection<ReplayFolder>();
+        FileResults = new Dictionary<string, ReplayFile>();
         StatusBarModel = new StatusBar();
         SortParameters = new SearchParameters
         {
@@ -118,51 +124,63 @@ public class MainWindowViewModel
     {
         _log.Information("Loading replays from database...");
 
-        IReadOnlyCollection<FileResult> databaseResults;
-        int searchResultCount;
+
+        if (Configuration.UseHierarchyView)
+        {
+            var folders = _fileManager.GetTopLevelFolders(SortParameters, Configuration.ItemsPerPage, ReplayNodes.Count, resetSearch);
+            
+            foreach (var folder in folders)
+            {
+                var folderView = new ReplayFolder(folder, Configuration, FileResults, ExecutableManager);
+                Application.Current.Dispatcher.Invoke(delegate
+                {
+                    ReplayNodes.Add(folderView);
+                });
+            }   
+            
+            return (folders.Count, -1, null);
+        }     
+        
         try
         {
-            (databaseResults, searchResultCount) = _fileManager.GetReplays(SortParameters, Configuration.ItemsPerPage, PreviewReplays.Count, resetSearch);
+            var (replays, searchCount) = _fileManager.GetReplays(SortParameters, Configuration.ItemsPerPage, ReplayNodes.Count, resetSearch);
+            
+            _log.Information($"Retrieved {replays.Count} Replays from database");
+        
+            foreach (ReplayFile file in replays)
+            {
+                AddReplayToCollection(file);
+            }
+            
+            return (replays.Count, searchCount, null);
         }
         catch (Exception ex)
         {
             _log.Error(ex.ToString());
             return (0, 0, ex);
         }
-
-        _log.Information($"Retrieved {databaseResults.Count} replays");
-
-        foreach (FileResult file in databaseResults)
-        {
-            AddReplayToCollection(file);
-        }
-
-        return (databaseResults.Count, searchResultCount, null);
     }
 
     /// <summary>
     /// Save a Replay File result
     /// </summary>
     /// <param name="fileResult"></param>
-    public ReplayPreview AddReplayToCollection(FileResult file)
+    public ReplayPreview AddReplayToCollection(ReplayFile replayFile)
     {
-        if (file == null) { throw new ArgumentNullException(nameof(file)); }
+        if (replayFile == null) { throw new ArgumentNullException(nameof(replayFile)); }
 
         // create preview model, used in replay list
-        var previewModel = new ReplayPreview(file, Configuration);
+        var previewModel = new ReplayPreview(replayFile, Configuration);
         previewModel.IsSupported = ExecutableManager.DoesVersionExist(previewModel.GameVersion);
 
         // add to collection
         Application.Current.Dispatcher.Invoke(delegate
         {
-            PreviewReplays.Add(previewModel);
+            ReplayNodes.Add(previewModel);
         });
 
         // skip if file already exists
-        if (!FileResults.ContainsKey(file.FileInfo.Path))
-        {
-            FileResults.Add(file.FileInfo.Path, file);
-        }
+        FileResults.TryAdd(replayFile.Id, replayFile);
 
         return previewModel;
     }
@@ -221,9 +239,30 @@ public class MainWindowViewModel
 
     public async Task LoadPreviewPlayerThumbnails()
     {
-        foreach (ReplayPreview replay in PreviewReplays)
+        foreach (ReplayPreview replay in ReplayNodes.OfType<ReplayPreview>())
         {
             await LoadSinglePreviewPlayerThumbnails(replay);
+        }
+
+        foreach (ReplayFolder folder in ReplayNodes.OfType<ReplayFolder>())
+        {
+            await LoadPreviewPlayerThumbnails(folder);
+        }
+    }
+
+    private async Task LoadPreviewPlayerThumbnails(ReplayFolder folder)
+    {
+        foreach (var file in folder.Children)
+        {
+            switch (file)
+            {
+                case ReplayFolder subfolder:
+                    await LoadPreviewPlayerThumbnails(subfolder);
+                    break;
+                case ReplayPreview replay:
+                    await LoadSinglePreviewPlayerThumbnails(replay);
+                    break;
+            }
         }
     }
 
@@ -316,7 +355,7 @@ public class MainWindowViewModel
     {
         _log.Information($"Refreshing player markers...");
         // Look through all replays to get all players
-        foreach (ReplayPreview replay in PreviewReplays)
+        foreach (ReplayPreview replay in ReplayNodes.OfType<ReplayPreview>())
         {
             if (replay.IsErrorReplay) { continue; } // TODO
 
@@ -375,7 +414,7 @@ public class MainWindowViewModel
 
         // Clear previously loaded replays
         FileResults.Clear();
-        PreviewReplays.Clear();
+        ReplayNodes.Clear();
 
         StatusBarModel.StatusMessage = Application.Current.TryFindResource("LoadingMessageReplay") as string;
         StatusBarModel.Visible = true;
@@ -408,7 +447,7 @@ public class MainWindowViewModel
         else
         {
             StatusBarModel.ShowProgressBar = false;
-            StatusBarModel.StatusMessage = $"{PreviewReplays.Count} / {searchResults}";
+            StatusBarModel.StatusMessage = $"{ReplayNodes.Count} / {searchResults}";
         }
     }
 
@@ -445,7 +484,7 @@ public class MainWindowViewModel
         singleWindow.Show();
     }
 
-    public void OpenReplayContainingFolder(string location)
+    public void OpenContainingFolder(string location)
     {
         _log.Information($"Opening replay file location {location}");
 
@@ -492,7 +531,7 @@ public class MainWindowViewModel
             AlwaysIncludeMarked = false,
             IncludeAllPlayers = false,
             ReplayPreview = preview,
-            Replay = FileResults[preview.Location].ReplayFile,
+            Replay = FileResults[preview.Location].Replay,
             ContentFrame = contentFrame,
             HideHeader = false,
             WindowTitleText = Application.Current.FindResource("ErdTitle") as string,
@@ -656,7 +695,7 @@ public class MainWindowViewModel
         if (preview == null) { throw new ArgumentNullException(nameof(preview)); }
 
         // Get the full replay object, it contains more information
-        FileResult replay = FileResults[preview.Location];
+        ReplayFile replay = FileResults[preview.Location];
 
         // Ask the file manager to rename the replay
         string errorMessage = null;
@@ -686,12 +725,57 @@ public class MainWindowViewModel
         return errorMessage;
     }
 
+    public string RenameFolder(ReplayFolder folder, string newFolderName)
+    {
+        if (folder == null) { throw new ArgumentNullException(nameof(folder)); }
+
+        // Ask the file manager to rename the replay
+        string errorMessage = null;
+        try
+        {
+            string newFolderLocation = _fileManager.RenameFolder(folder.Location, newFolderName);
+
+            folder.Name = Path.GetFileName(newFolderLocation);
+            folder.Location = newFolderLocation;
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message == "{EMPTY ERROR}")
+            {
+                errorMessage = Application.Current.TryFindResource("RenameFlyoutEmptyError") as string;
+            }
+            else if (ex.Message == "{NOT FOUND ERROR}")
+            {
+                errorMessage = Application.Current.TryFindResource("RenameFlyoutNotFoundError") as string;
+            }
+            else if (ex.Message == "{NAME ALREADY EXISTS ERROR}")
+            {
+                errorMessage = Application.Current.TryFindResource("RenameFlyoutAlreadyExistsError") as string;
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        return errorMessage;
+    }
+
     public async Task DeleteReplayFile(ReplayPreview preview)
     {
         if (preview == null) { throw new ArgumentNullException(nameof(preview)); }
 
         _ = _fileManager.DeleteFile(FileResults[preview.Location]);
 
+        await ReloadReplayList(false).ConfigureAwait(false);
+    }
+
+    public async Task DeleteFolder(ReplayFolder folder)
+    {
+        if (folder == null) { throw new ArgumentNullException(nameof(folder)); }
+        
+        _ = _fileManager.DeleteFolder(folder.Location);
+        
         await ReloadReplayList(false).ConfigureAwait(false);
     }
 
@@ -709,7 +793,7 @@ public class MainWindowViewModel
     /// <returns></returns>
     public long CalculateReplayCacheSize()
     {
-        var databaseInfo = new FileInfo(_fileManager.DatabasePath);
+        var databaseInfo = new System.IO.FileInfo(_fileManager.DatabasePath);
         var totalSize = databaseInfo.Length;
 
         // Calculate disk size of search index files

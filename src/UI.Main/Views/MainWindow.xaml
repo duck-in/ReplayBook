@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:ui="http://schemas.modernwpf.com/2019"
         xmlns:viewmodels="clr-namespace:Fraxiinus.ReplayBook.UI.Main.ViewModels"
+        xmlns:mv="clr-namespace:Fraxiinus.ReplayBook.UI.Main.Models.View"
         Title="{DynamicResource ProgramName}"
         Width="1150"
         Height="670"
@@ -186,26 +187,33 @@
                     </Button>
                 </Grid>
 
-                <ListView x:Name="ReplayListView"
+                
+                <!--  --> 
+                <TreeView x:Name="ReplayTreeView"
                           Grid.Row="2"
                           MinWidth="350"
                           VerticalAlignment="Stretch"
-                          ItemsSource="{Binding Path=PreviewReplays}"
-                          Loaded="ReplayListView_Loaded"
-                          ScrollViewer.ScrollChanged="ReplayListView_ScrollChanged"
-                          SelectionChanged="ReplayListView_SelectionChanged">
-                    <ListView.ItemContainerStyle>
-                        <Style BasedOn="{StaticResource DefaultListViewItemStyle}" TargetType="{x:Type ListViewItem}">
+                          ItemsSource="{Binding Path=ReplayNodes}"
+                          Loaded="ReplayTreeView_Loaded"
+                          ScrollViewer.ScrollChanged="ReplayTreeView_ScrollChanged"
+                          SelectedItemChanged="ReplayTreeView_SelectedItemChanged">
+                    <TreeView.ItemContainerStyle>
+                        <Style BasedOn="{StaticResource DefaultTreeViewItemStyle}" TargetType="{x:Type TreeViewItem}">
                             <Setter Property="BorderBrush" Value="{DynamicResource BaseBackground}" />
                             <Setter Property="BorderThickness" Value="0,0,0,1" />
                         </Style>
-                    </ListView.ItemContainerStyle>
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
+                    </TreeView.ItemContainerStyle>
+                    <TreeView.Resources>
+                        <DataTemplate DataType="{x:Type mv:ReplayPreview}">
                             <controls:ReplayItemControl />
                         </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
+                        
+                        <HierarchicalDataTemplate DataType="{x:Type mv:ReplayFolder}"
+                                                  ItemsSource="{Binding Children}">
+                            <controls:FolderItemControl />
+                        </HierarchicalDataTemplate>
+                    </TreeView.Resources>
+                </TreeView>
 
                 <Grid x:Name="ReplayPageBar"
                       Grid.Row="3"

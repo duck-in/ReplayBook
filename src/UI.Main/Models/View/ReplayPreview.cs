@@ -8,46 +8,41 @@ using Fraxiinus.ReplayBook.Configuration.Models;
 
 namespace Fraxiinus.ReplayBook.UI.Main.Models.View;
 
-public class ReplayPreview : INotifyPropertyChanged
+public class ReplayPreview : ReplayNode
 {
-    public event PropertyChangedEventHandler PropertyChanged;
     private readonly bool _showRealName;
-    private readonly bool _useFolderStructure;
-    private readonly string _filePath;
 
-    public ReplayPreview(FileResult file, ObservableConfiguration config)
+    public ReplayPreview(ReplayFile replayFile, ObservableConfiguration config)
     {
-        if (file == null) { throw new ArgumentNullException(nameof(file)); }
+        if (replayFile == null) { throw new ArgumentNullException(nameof(replayFile)); }
         
-        Name = file.FileName;
-        _filePath = file.Id;
-        AlternativeName = file.AlternativeName;
-        Location = file.FileInfo.Path;
-        CreationDate = file.FileCreationTime;
+        Name = replayFile.FileInfo.Name;
+        AlternativeName = replayFile.AlternativeName;
+        Location = replayFile.FileInfo.Path;
+        CreationDate = replayFile.FileInfo.CreationTime;
 
-        if (file.ReplayFile == default)
+        if (replayFile.Replay == null)
         {
             IsErrorReplay = true;
             return;
         }
         IsErrorReplay = false;
         // Copy all the replay file fields
-        GameDuration = file.ReplayFile.GameDuration;
-        GameVersion = file.ReplayFile.GameVersion;
-        MatchId = file.ReplayFile.MatchId;
-        MapName = file.ReplayFile.MapName;
-        IsBlueVictorious = file.ReplayFile.IsBlueVictorious;
+        GameDuration = replayFile.Replay.GameDuration;
+        GameVersion = replayFile.Replay.GameVersion;
+        MatchId = replayFile.Replay.MatchId;
+        MapName = replayFile.Replay.MapName;
+        IsBlueVictorious = replayFile.Replay.IsBlueVictorious;
 
         // Set new fields
         _showRealName = config.RenameFile;
-        _useFolderStructure = config.UseFolderStructure;
         IsPlaying = false;
         IsSelected = false;
 
         // Setup preview players, including markers
         BluePreviewPlayers = new List<PlayerPreview>();
         RedPreviewPlayers = new List<PlayerPreview>();
-        foreach (var bPlayer in file.ReplayFile.BluePlayers)
+        foreach (var bPlayer in replayFile.Replay.BluePlayers)
         {
             var bluePlayer = new PlayerPreview(bPlayer, config.MarkerStyle);
             bluePlayer.Marker = config.PlayerMarkers
@@ -55,7 +50,7 @@ public class ReplayPreview : INotifyPropertyChanged
 
             BluePreviewPlayers.Add(bluePlayer);
         }
-        foreach (var rPlayer in file.ReplayFile.RedPlayers)
+        foreach (var rPlayer in replayFile.Replay.RedPlayers)
         {
             var redPlayer = new PlayerPreview(rPlayer, config.MarkerStyle);
             redPlayer.Marker = config.PlayerMarkers
@@ -80,16 +75,10 @@ public class ReplayPreview : INotifyPropertyChanged
     {
         get
         {
-            if (_useFolderStructure) return _filePath; // TODO Remove once everything is inside folders
             if (string.IsNullOrEmpty(_displayName)) { return _showRealName ? Name : AlternativeName; }
             return _displayName;
         }
-        set
-        {
-            _displayName = value;
-            PropertyChanged?.Invoke(
-                this, new PropertyChangedEventArgs(nameof(DisplayName)));
-        }
+        set => SetField(ref _displayName, value);
     }
 
     public TimeSpan GameDuration { get; private set; }
@@ -106,8 +95,6 @@ public class ReplayPreview : INotifyPropertyChanged
 
     public bool IsBlueVictorious { get; private set; }
 
-    public string Location { get; set; }
-
     public DateTimeOffset CreationDate { get; set; }
 
     public bool IsSupported { get; set; }
@@ -120,35 +107,13 @@ public class ReplayPreview : INotifyPropertyChanged
     public bool IsPlaying
     {
         get => _isPlaying;
-        set
-        {
-            _isPlaying = value;
-            PropertyChanged?.Invoke(
-                this, new PropertyChangedEventArgs(nameof(IsPlaying)));
-        }
+        set => SetField(ref _isPlaying, value);
     }
 
     private bool _isSelected;
     public bool IsSelected
     {
         get => _isSelected;
-        set
-        {
-            _isSelected = value;
-            PropertyChanged?.Invoke(
-                this, new PropertyChangedEventArgs(nameof(IsSelected)));
-        }
-    }
-
-    private bool _isHovered;
-    public bool IsHovered
-    {
-        get => _isHovered;
-        set
-        {
-            _isHovered = value;
-            PropertyChanged?.Invoke(
-                this, new PropertyChangedEventArgs(nameof(IsHovered)));
-        }
+        set => SetField(ref _isSelected, value);
     }
 }
