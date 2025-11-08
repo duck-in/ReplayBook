@@ -57,7 +57,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Controls
             
             var flyout = FlyoutHelper.CreateFlyout(includeButton: true, includeCustom: true);
             flyout.GetFlyoutLabel().Visibility = Visibility.Collapsed;
-            flyout.SetFlyoutButtonText(TryFindResource("RenameFolder") as string);
+            flyout.SetFlyoutButtonText(TryFindResource("RenameReplayFile") as string);
 
             // Create textbox to add as flyout custom element
             var fileNameBox = new TextBox
@@ -108,7 +108,7 @@ namespace Fraxiinus.ReplayBook.UI.Main.Controls
             var flyout = FlyoutHelper.CreateFlyout(includeButton: true, includeCustom: false);
 
             // set the flyout texts
-            flyout.SetFlyoutButtonText(TryFindResource("DeleteFolder") as string);
+            flyout.SetFlyoutButtonText(TryFindResource("DeleteReplayFile") as string);
             flyout.SetFlyoutLabelText(TryFindResource("DeleteFlyoutLabel") as string);
 
             // set button click function
