@@ -201,6 +201,7 @@
                         <Style BasedOn="{StaticResource DefaultTreeViewItemStyle}" TargetType="{x:Type TreeViewItem}">
                             <Setter Property="BorderBrush" Value="{DynamicResource BaseBackground}" />
                             <Setter Property="BorderThickness" Value="0,0,0,1" />
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                         </Style>
                     </TreeView.ItemContainerStyle>
                     <TreeView.Resources>

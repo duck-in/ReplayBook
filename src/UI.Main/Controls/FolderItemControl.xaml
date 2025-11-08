@@ -9,8 +9,8 @@
              mc:Ignorable="d">
 
 
-                <Grid Width="350"
-                      Height="100"
+                <Grid MinWidth="350"
+                      Height="60"
                       Background="Transparent"
                       MouseEnter="Grid_MouseEnter"
                       MouseLeave="Grid_MouseLeave"
@@ -57,23 +57,18 @@
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <ui:SimpleStackPanel Grid.Row="0"
-                                         Grid.Column="0"
-                                         Margin="0,5,0,2"
-                                         Orientation="Horizontal" />
-
                     <!--  Left side stats  -->
-                    <StackPanel Grid.Row="1"
+                    <StackPanel Grid.Row="0"
                                 Grid.Column="0"
-                                Margin="0,10,5,0"
+                                Margin="5,5,5,5"
                                 Orientation="Vertical">
                         
                         <TextBlock x:Name="FolderNameText"
-                                   FontSize="28"
+                                   FontSize="22"
                                    Text="{Binding Path=Name, FallbackValue=Folder}" />
                         
                         <TextBlock x:Name="ReplayCount"
-                                   FontSize="14"
+                                   FontSize="13"
                                    Text="{Binding Path=ReplayCount, StringFormat=Replays: {0}, FallbackValue=Replays: 0}">
                         </TextBlock>
                     </StackPanel>
